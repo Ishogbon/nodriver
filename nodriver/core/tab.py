@@ -682,8 +682,7 @@ class Tab(Connection):
             raise ProtocolException(errors)
 
         if remote_object:
-            if return_by_value:
-                if remote_object.value:
+            if return_by_value and remote_object.value is not None:
                     return remote_object.value
 
             else:
