@@ -63,6 +63,7 @@ class Browser:
     async def create(
         cls,
         config: Config = None,
+        connection_retry_count: int = 5,
         *,
         user_data_dir: PathLike = None,
         headless: bool = False,
@@ -87,11 +88,11 @@ class Browser:
                 port=port,
                 **kwargs,
             )
-        instance = cls(config)
+        instance = cls(config, connection_retry_count)
         await instance.start()
         return instance
 
-    def __init__(self, config: Config, **kwargs):
+    def __init__(self, config: Config, connection_retry_count: int = 5, **kwargs):
         """
         constructor. to create a instance, use :py:meth:`Browser.create(...)`
 
@@ -117,6 +118,7 @@ class Browser:
         self._process_pid = None
         self._keep_user_data_dir = None
         self._is_updating = asyncio.Event()
+        self._connection_retry_count = connection_retry_count
         self.connection: Connection = None
         logger.debug("Session object initialized: %s" % vars(self))
 
@@ -338,7 +340,7 @@ class Browser:
         self._http = HTTPApi((self.config.host, self.config.port))
         util.get_registered_instances().add(self)
         await asyncio.sleep(0.25)
-        for _ in range(5):
+        for _ in range(self._connection_retry_count):
             try:
                 self.info = ContraDict(await self._http.get("version"), silent=True)
             except (Exception,):

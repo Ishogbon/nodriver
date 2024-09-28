@@ -34,6 +34,7 @@ async def start(
     host: Optional[str] = None,
     port: Optional[int] = None,
     expert: Optional[bool] = None,
+    connection_retry_count: Optional[int] = 5,
     **kwargs: Optional[dict],
 ) -> Browser:
     """
@@ -93,7 +94,7 @@ async def start(
         )
     from .browser import Browser
 
-    return await Browser.create(config)
+    return await Browser.create(config, connection_retry_count)
 
 
 async def create_from_undetected_chromedriver(
